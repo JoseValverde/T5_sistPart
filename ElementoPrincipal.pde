@@ -4,6 +4,9 @@ class ElementoPrincipal extends ElementoBase {
   float minCambioDireccion = -3.0;
   float maxCambioDireccion = 3.0;
   
+  // Margen de seguridad para los bordes
+  float margenSeguridad = 50;
+  
   ElementoPrincipal(PVector posicion, color colorInicial, PShape forma) {
     super(posicion, colorInicial, forma);
     // Iniciar con velocidad aleatoria
@@ -31,10 +34,24 @@ class ElementoPrincipal extends ElementoBase {
     // Actualizar posición
     posicion.add(velocidad);
     
-    // Rebote en los bordes
-    if (posicion.x < 0 || posicion.x > width) velocidad.x *= -1;
-    if (posicion.y < 0 || posicion.y > height) velocidad.y *= -1;
-    if (posicion.z < -500 || posicion.z > 500) velocidad.z *= -1;
+    // Rebote en los bordes con margen de seguridad
+    if (posicion.x < margenSeguridad || posicion.x > width - margenSeguridad) {
+      velocidad.x *= -1;
+      // Corregir posición para que esté dentro de los límites
+      posicion.x = constrain(posicion.x, margenSeguridad, width - margenSeguridad);
+    }
+    
+    if (posicion.y < margenSeguridad || posicion.y > height - margenSeguridad) {
+      velocidad.y *= -1;
+      // Corregir posición para que esté dentro de los límites
+      posicion.y = constrain(posicion.y, margenSeguridad, height - margenSeguridad);
+    }
+    
+    if (posicion.z < -500 + margenSeguridad || posicion.z > 500 - margenSeguridad) {
+      velocidad.z *= -1;
+      // Corregir posición para que esté dentro de los límites
+      posicion.z = constrain(posicion.z, -500 + margenSeguridad, 500 - margenSeguridad);
+    }
     
     // Reiniciar aceleración
     aceleracion.mult(0);

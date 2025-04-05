@@ -3,19 +3,29 @@ class ElementoSeguidor extends ElementoBase {
   float delay;
   PVector offset;
   
+  // Factor para controlar la distancia entre elementos
+  float factorDistancia;
+  
   ElementoSeguidor(PVector posicion, color colorInicial, PShape forma, ElementoBase padre) {
     super(posicion, colorInicial, forma);
     this.padre = padre;
     
     // Valor de retraso aleatorio para seguimiento
-    this.delay = random(0.02, 0.1);
+    this.delay = random(0.02, 0.08); // Reducido ligeramente para respuesta más lenta
     
-    // Pequeña variación en la posición
-    this.offset = new PVector(
-      random(-20, 20),
-      random(-20, 20),
-      random(-20, 20)
+    // Factor de distancia aleatorio pero mayor
+    this.factorDistancia = random(40, 80);
+    
+    // Generar un vector de dirección aleatoria normalizado
+    PVector direccionAleatoria = new PVector(
+      random(-1, 1),
+      random(-1, 1),
+      random(-1, 1)
     );
+    direccionAleatoria.normalize();
+    
+    // Aplicar el factor de distancia para crear más separación
+    this.offset = PVector.mult(direccionAleatoria, factorDistancia);
   }
   
   void actualizar() {

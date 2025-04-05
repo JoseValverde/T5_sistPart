@@ -35,6 +35,15 @@ abstract class ElementoBase {
     pushMatrix();
     translate(posicion.x, posicion.y, posicion.z);
     
+    // Añadir rotación suave para que las formas sean más dinámicas
+    // y se note mejor que están en 3D
+    rotateY(frameCount * 0.01);
+    rotateX(frameCount * 0.005);
+    
+    // Material para luz
+    shininess(5.0);
+    specular(200, 200, 200);
+    
     // Aplicar color al objeto
     forma.setFill(colorActual);
     
