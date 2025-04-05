@@ -24,9 +24,33 @@ class ElementoPrincipal extends ElementoBase {
     // Aplicar cambio con suavizado (ease)
     velocidad.lerp(nuevaDireccion, factorEase);
     velocidad.limit(maxVelocidad);
+    
+    // Registrar el tiempo del cambio
+    tiempoUltimoCambio = millis();
+    cambiarDireccionPendiente = false;
+    
+    // Señalizar a todos los hijos directos para cambiar su dirección
+    propagarCambioDireccion();
+  }
+  
+  // Método para propagar el cambio a los hijos directos
+  void propagarCambioDireccion() {
+    for (ElementoBase elemento : todosElementos) {
+      if (elemento instanceof ElementoSeguidor) {
+        ElementoSeguidor hijo = (ElementoSeguidor)elemento;
+        if (hijo.padre == this) {
+          hijo.señalizarCambioDireccion();
+        }
+      }
+    }
   }
   
   void actualizar() {
+    // Verificar si hay un cambio de dirección pendiente
+    if (cambiarDireccionPendiente) {
+      cambiarDireccion();
+    }
+    
     // Actualizar velocidad
     velocidad.add(aceleracion);
     velocidad.limit(maxVelocidad);

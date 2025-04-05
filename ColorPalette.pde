@@ -25,6 +25,11 @@ class ColorPalette {
     return colorArray[index];
   }
   
+  // Método específico para obtener el color accent200 para el elemento principal
+  color getElementoPrincipalColor() {
+    return accent200;
+  }
+  
   color getBgColor() {
     return bg100;
   }

@@ -12,6 +12,10 @@ abstract class ElementoBase {
   // Factor de suavizado para movimientos (ease)
   float factorEase = 0.05;
   
+  // Variables para control de cambios de dirección en cascada
+  boolean cambiarDireccionPendiente = false;
+  int tiempoUltimoCambio = 0;
+  
   ElementoBase(PVector posicion, color colorInicial, PShape forma) {
     this.posicion = posicion;
     this.colorActual = colorInicial;
@@ -27,6 +31,11 @@ abstract class ElementoBase {
   
   void cambiarColor(color nuevoColor) {
     colorActual = nuevoColor;
+  }
+  
+  // Método para señalizar un cambio de dirección pendiente
+  void señalizarCambioDireccion() {
+    cambiarDireccionPendiente = true;
   }
   
   abstract void actualizar();

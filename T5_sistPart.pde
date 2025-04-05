@@ -10,7 +10,7 @@ DebugManager debugManager;
 boolean debugMode = false;
 
 int numHijosDerivados = 3;
-int nivelMaximoProfundidad = 8; // Cuántas generaciones de hijos permitir
+int nivelMaximoProfundidad = 3; // Cuántas generaciones de hijos permitir
 
 // Variables para control de cámara
 float rotX = 0;
@@ -33,7 +33,7 @@ void setup() {
   // Crear elemento principal
   elementoPrincipal = new ElementoPrincipal(
     new PVector(width/2, height/2, 0),
-    colorPalette.getRandomColor(),
+    colorPalette.getElementoPrincipalColor(),  // Usar específicamente accent200
     shapeManager.getCurrentShape()
   );
   
@@ -54,6 +54,9 @@ void setup() {
 void draw() {
   background(colorPalette.getBgColor());
   
+  // INICIO DEL ENTORNO 3D
+  pushMatrix();
+  
   // Configuración de la cámara y luces para espacio 3D
   setupCamera();
   
@@ -62,7 +65,8 @@ void draw() {
   
   // Verificar y reaccionar a cambios en audio
   if (audioManager.hayGrave()) {
-    elementoPrincipal.cambiarDireccion();
+    // Iniciar el cambio de dirección en cascada
+    elementoPrincipal.señalizarCambioDireccion();
   }
   
   if (audioManager.hayAgudo()) {
@@ -75,10 +79,20 @@ void draw() {
     elemento.mostrar();
   }
   
+  // FIN DEL ENTORNO 3D
+  popMatrix();
+  
+  // INICIO DEL ENTORNO 2D PARA DEBUG
+  hint(DISABLE_DEPTH_TEST);  // Asegurar que el debug esté al frente
+  camera();  // Resetear la cámara a 2D
+  noLights();  // Desactivar luces para dibujo 2D
+  
   // Mostrar debug si está activado
   if (debugMode) {
     debugManager.mostrar(elementoPrincipal, todosElementos.size(), audioManager);
   }
+  
+  hint(ENABLE_DEPTH_TEST);  // Restaurar comportamiento normal para el siguiente frame
 }
 
 // Configurar la cámara para mejor visualización 3D
@@ -94,9 +108,9 @@ void setupCamera() {
   translate(-width/2, -height/2, -camZ);
   
   // Añadir luces
-  //ambientLight(60, 60, 60);
+  ambientLight(60, 60, 60);
   //directionalLight(255, 255, 255, 1, 1, -1);
-  pointLight(200, 200, 200, width/2, height/2, 200);
+  pointLight(100, 100, 100, width/2, height/2, 200);
 }
 
 void keyPressed() {
