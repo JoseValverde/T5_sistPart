@@ -10,7 +10,7 @@ DebugManager debugManager;
 boolean debugMode = false;
 
 int numHijosDerivados = 3;
-int nivelMaximoProfundidad = 3; // Cuántas generaciones de hijos permitir
+int nivelMaximoProfundidad = 4; // Cuántas generaciones de hijos permitir
 
 // Variables para control de cámara
 float rotX = 0;
@@ -109,7 +109,7 @@ void setupCamera() {
   
   // Añadir luces
   ambientLight(60, 60, 60);
-  //directionalLight(255, 255, 255, 1, 1, -1);
+  directionalLight(255, 255, 255, 1, 1, -1);
   pointLight(100, 100, 100, width/2, height/2, 200);
 }
 
@@ -120,6 +120,40 @@ void keyPressed() {
   else if (key == 'r' || key == 'R') {
     // Activar/desactivar rotación automática
     rotateCam = !rotateCam;
+  }
+  // Controles de sensibilidad por bandas de frecuencia
+  else if (key == '1') {
+    // Disminuir sensibilidad de graves
+    audioManager.disminuirSensibilidadGraves();
+  }
+  else if (key == '2') {
+    // Aumentar sensibilidad de graves
+    audioManager.aumentarSensibilidadGraves();
+  }
+  else if (key == '3') {
+    // Disminuir sensibilidad de medios
+    audioManager.disminuirSensibilidadMedios();
+  }
+  else if (key == '4') {
+    // Aumentar sensibilidad de medios
+    audioManager.aumentarSensibilidadMedios();
+  }
+  else if (key == '5') {
+    // Disminuir sensibilidad de agudos
+    audioManager.disminuirSensibilidadAgudos();
+  }
+  else if (key == '6') {
+    // Aumentar sensibilidad de agudos
+    audioManager.aumentarSensibilidadAgudos();
+  }
+  // Controles generales (mantener compatibilidad)
+  else if (key == '+' || key == '=') {
+    // Aumentar todas las sensibilidades
+    audioManager.aumentarSensibilidad();
+  }
+  else if (key == '-' || key == '_') {
+    // Disminuir todas las sensibilidades
+    audioManager.disminuirSensibilidad();
   }
   else if (keyCode == UP) {
     rotX -= 0.1;

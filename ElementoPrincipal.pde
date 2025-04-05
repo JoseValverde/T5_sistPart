@@ -1,20 +1,29 @@
 class ElementoPrincipal extends ElementoBase {
   
-  // Rangos para cambio de dirección
-  float minCambioDireccion = -3.0;
-  float maxCambioDireccion = 3.0;
+  // Rangos para cambio de dirección - aumentados significativamente
+  float minCambioDireccion = -18.0;  // Antes era -3.0
+  float maxCambioDireccion = 18.0;   // Antes era 3.0
   
   // Margen de seguridad para los bordes
   float margenSeguridad = 50;
   
   ElementoPrincipal(PVector posicion, color colorInicial, PShape forma) {
     super(posicion, colorInicial, forma);
-    // Iniciar con velocidad aleatoria
-    velocidad = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
+    
+    // Sobrescribir los limitadores heredados con valores más altos
+    this.maxVelocidad = 40.0;       // Mayor que el valor predeterminado (20.0)
+    this.maxAceleracion = 2.5;      // Mayor que el valor predeterminado (1.5)
+    
+    // Iniciar con velocidad aleatoria más alta
+    velocidad = new PVector(
+      random(-2, 2),
+      random(-2, 2),
+      random(-2, 2)
+    );
   }
   
   void cambiarDireccion() {
-    // Cambiar dirección aleatoriamente al detectar un grave
+    // Cambio de dirección más pronunciado al detectar un grave
     PVector nuevaDireccion = new PVector(
       random(minCambioDireccion, maxCambioDireccion),
       random(minCambioDireccion, maxCambioDireccion),

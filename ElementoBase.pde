@@ -6,11 +6,11 @@ abstract class ElementoBase {
   PShape forma;
   
   // Limitadores de movimiento
-  float maxVelocidad = 2.0;
-  float maxAceleracion = 0.5;
+  float maxVelocidad = 20.0;
+  float maxAceleracion = 1.5;
   
   // Factor de suavizado para movimientos (ease)
-  float factorEase = 0.05;
+  float factorEase = 0.1;
   
   // Variables para control de cambios de dirección en cascada
   boolean cambiarDireccionPendiente = false;
@@ -45,7 +45,6 @@ abstract class ElementoBase {
     translate(posicion.x, posicion.y, posicion.z);
     
     // Añadir rotación suave para que las formas sean más dinámicas
-    // y se note mejor que están en 3D
     rotateY(frameCount * 0.01);
     rotateX(frameCount * 0.005);
     
@@ -55,6 +54,9 @@ abstract class ElementoBase {
     
     // Aplicar color al objeto
     forma.setFill(colorActual);
+    
+    // Configurar el color y grosor de las aristas
+    forma.setStroke(color(0,0));  // Color negro y transparente para las aristas
     
     // Dibujar la forma
     shape(forma);

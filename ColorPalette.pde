@@ -31,7 +31,7 @@ class ColorPalette {
   }
   
   color getBgColor() {
-    return bg100;
+    return text200; //bg100;
   }
   
   color getTextColor() {

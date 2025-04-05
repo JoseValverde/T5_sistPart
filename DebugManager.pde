@@ -3,10 +3,10 @@ class DebugManager {
   void mostrar(ElementoPrincipal ep, int elementosTotal, AudioManager audio) {
     pushStyle();
     
-    // Fondo semitransparente para sección debug
+    // Fondo semitransparente para sección debug - ampliado para incluir más controles
     fill(0, 150);
     rectMode(CORNER);
-    rect(10, 10, 300, 200);
+    rect(10, 10, 320, 420);  // Mayor altura para sensibilidades independientes
     
     // Texto debug
     fill(255);
@@ -34,6 +34,20 @@ class DebugManager {
     mostrarBarraAudio("Graves", audio.getNivelGraves(), 20, 140, 255, 0, 0);
     mostrarBarraAudio("Medios", audio.getNivelMedios(), 20, 160, 0, 255, 0);
     mostrarBarraAudio("Agudos", audio.getNivelAgudos(), 20, 180, 0, 0, 255);
+    
+    // Mostrar factores de sensibilidad
+    text("SENSIBILIDAD:", 20, 210);
+    text("Graves: " + nf(audio.getSensibilidadGraves(), 1, 1) + " (teclas 1/2)", 20, 230);
+    text("Medios: " + nf(audio.getSensibilidadMedios(), 1, 1) + " (teclas 3/4)", 20, 250);
+    text("Agudos: " + nf(audio.getSensibilidadAgudos(), 1, 1) + " (teclas 5/6)", 20, 270);
+    text("Global: +/- para ajustar todas juntas", 20, 290);
+    
+    // Sección de controles de teclado
+    text("CONTROLES:", 20, 320);
+    text("D - Activar/desactivar panel debug", 20, 340);
+    text("R - Activar/desactivar rotación automática", 20, 360);
+    text("Flechas - Rotar cámara", 20, 380);
+    text("Click+Arrastrar - Rotar cámara", 20, 400);
     
     popStyle();
   }
