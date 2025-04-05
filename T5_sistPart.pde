@@ -83,7 +83,7 @@ void crearHijos(ElementoBase padre, int nivelProfundidad) {
   for (int i = 0; i < numHijosDerivados; i++) {
     ElementoSeguidor hijo = new ElementoSeguidor(
       padre.posicion.copy(),
-      padre.color,
+      padre.colorActual,  // Corregido: 'color' -> 'colorActual'
       shapeManager.getCurrentShape(),
       padre
     );
