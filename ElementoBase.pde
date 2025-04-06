@@ -7,7 +7,7 @@ abstract class ElementoBase {
   
   // Limitadores de movimiento
   float maxVelocidad = 20.0;
-  float maxAceleracion = 1.5;
+  float maxAceleracion = 0.05;
   
   // Factor de suavizado para movimientos (ease)
   float factorEase = 0.1;
@@ -16,12 +16,20 @@ abstract class ElementoBase {
   boolean cambiarDireccionPendiente = false;
   int tiempoUltimoCambio = 0;
   
+  // Variables para rotación estable
+  float rotationSpeed;
+  float rotationOffset;
+  
   ElementoBase(PVector posicion, color colorInicial, PShape forma) {
     this.posicion = posicion;
     this.colorActual = colorInicial;
     this.forma = forma;
     this.velocidad = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
     this.aceleracion = new PVector(0, 0, 0);
+    
+    // Inicializar valores de rotación estables
+    this.rotationSpeed = random(0.005, 0.02);
+    this.rotationOffset = random(TWO_PI);
   }
   
   void aplicarFuerza(PVector fuerza) {
@@ -44,21 +52,19 @@ abstract class ElementoBase {
     pushMatrix();
     translate(posicion.x, posicion.y, posicion.z);
     
-    // Añadir rotación suave para que las formas sean más dinámicas
-    rotateY(frameCount * 0.01);
-    rotateX(frameCount * 0.005);
+    // Rotación más eficiente con valores precalculados
+    float rotY = sin(frameCount * rotationSpeed + rotationOffset);
+    float rotX = cos(frameCount * rotationSpeed * 0.7);
+    rotateY(rotY);
+    rotateX(rotX);
     
-    // Material para luz
+    // Material más eficiente
     shininess(5.0);
-    specular(200, 200, 200);
     
-    // Aplicar color al objeto
+    // Aplicar color - sin stroke para mejor rendimiento
     forma.setFill(colorActual);
+    forma.setStroke(false);
     
-    // Configurar el color y grosor de las aristas
-    forma.setStroke(color(0,0));  // Color negro y transparente para las aristas
-    
-    // Dibujar la forma
     shape(forma);
     popMatrix();
   }

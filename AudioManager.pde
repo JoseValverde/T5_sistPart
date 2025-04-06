@@ -10,15 +10,19 @@ class AudioManager {
   float nivelMedios;
   float nivelAgudos;
   
-  float umbralGraves = 0.3;
+  float umbralGraves = 0.003;
   float umbralAgudos = 0.2;
   
   // Factores de sensibilidad independientes
-  float factorSensibilidadGraves = 25.0;
+  float factorSensibilidadGraves = 15.0;
   float factorSensibilidadMedios = 100.0;
   float factorSensibilidadAgudos = 300.0;
   
   boolean modoArchivoAudio = true;
+  
+  // Cache de resultados para mejorar rendimiento
+  private float[] nivelCache = new float[3];
+  private int frameUltimaActualizacion = -1;
   
   AudioManager(PApplet parent, String archivoAudio) {
     // Inicializar FFT
@@ -76,15 +80,28 @@ class AudioManager {
   }
   
   float getNivelGraves() {
-    return nivelGraves;
+    actualizarCacheSiNecesario();
+    return nivelCache[0];
   }
   
   float getNivelMedios() {
-    return nivelMedios;
+    actualizarCacheSiNecesario();
+    return nivelCache[1];
   }
   
   float getNivelAgudos() {
-    return nivelAgudos;
+    actualizarCacheSiNecesario();
+    return nivelCache[2];
+  }
+  
+  // Método para actualizar el cache solo cuando es necesario
+  private void actualizarCacheSiNecesario() {
+    if (frameUltimaActualizacion != frameCount) {
+      nivelCache[0] = nivelGraves;
+      nivelCache[1] = nivelMedios;
+      nivelCache[2] = nivelAgudos;
+      frameUltimaActualizacion = frameCount;
+    }
   }
   
   // Métodos para ajustar la sensibilidad de graves
@@ -149,5 +166,25 @@ class AudioManager {
   float getSensibilidad() {
     // Promedio de las tres sensibilidades
     return (factorSensibilidadGraves + factorSensibilidadMedios + factorSensibilidadAgudos) / 3.0;
+  }
+  
+  // Método unificado para ajustar sensibilidad
+  void ajustarSensibilidad(int tipo, boolean aumentar) {
+    float ajuste = aumentar ? 0.2f : -0.2f;
+    
+    switch(tipo) {
+      case 0: // Graves
+        factorSensibilidadGraves = max(0.2, factorSensibilidadGraves + ajuste);
+        println("Sensibilidad Graves: " + factorSensibilidadGraves);
+        break;
+      case 1: // Medios
+        factorSensibilidadMedios = max(0.2, factorSensibilidadMedios + ajuste);
+        println("Sensibilidad Medios: " + factorSensibilidadMedios);
+        break;
+      case 2: // Agudos
+        factorSensibilidadAgudos = max(0.2, factorSensibilidadAgudos + ajuste);
+        println("Sensibilidad Agudos: " + factorSensibilidadAgudos);
+        break;
+    }
   }
 }

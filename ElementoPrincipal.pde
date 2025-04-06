@@ -1,18 +1,21 @@
 class ElementoPrincipal extends ElementoBase {
   
-  // Rangos para cambio de dirección - aumentados significativamente
-  float minCambioDireccion = -18.0;  // Antes era -3.0
-  float maxCambioDireccion = 18.0;   // Antes era 3.0
+  // Rangos para cambio de dirección - más controlados
+  float minCambioDireccion = -20.0;  // Reducido de -18.0
+  float maxCambioDireccion = 20.0;   // Reducido de 18.0
   
-  // Margen de seguridad para los bordes
-  float margenSeguridad = 50;
+  // Margen de seguridad aumentado para mejorar visibilidad
+  float margenSeguridad = 150;
+  
+  // Límites de movimiento más estrictos
+  float limiteZ = 300;  // Reducido para mantener visibilidad
   
   ElementoPrincipal(PVector posicion, color colorInicial, PShape forma) {
     super(posicion, colorInicial, forma);
     
-    // Sobrescribir los limitadores heredados con valores más altos
-    this.maxVelocidad = 40.0;       // Mayor que el valor predeterminado (20.0)
-    this.maxAceleracion = 2.5;      // Mayor que el valor predeterminado (1.5)
+    // Limites de velocidad más controlados
+    this.maxVelocidad = 30.0;       // Reducido de 40.0
+    this.maxAceleracion = 2.0;      // Reducido de 2.5
     
     // Iniciar con velocidad aleatoria más alta
     velocidad = new PVector(
@@ -67,23 +70,40 @@ class ElementoPrincipal extends ElementoBase {
     // Actualizar posición
     posicion.add(velocidad);
     
+    // Límites adaptados considerando posición de cámara y rotación
+    // Reducir área de movimiento para compensar efectos de rotación
+    float areaEfectivaX = width * 0.7;
+    float areaEfectivaY = height * 0.7;
+    
+    float centroX = width/2;
+    float centroY = height/2;
+    
     // Rebote en los bordes con margen de seguridad
-    if (posicion.x < margenSeguridad || posicion.x > width - margenSeguridad) {
+    if (posicion.x < centroX - areaEfectivaX/2 + margenSeguridad || 
+        posicion.x > centroX + areaEfectivaX/2 - margenSeguridad) {
       velocidad.x *= -1;
       // Corregir posición para que esté dentro de los límites
-      posicion.x = constrain(posicion.x, margenSeguridad, width - margenSeguridad);
+      posicion.x = constrain(posicion.x, 
+                           centroX - areaEfectivaX/2 + margenSeguridad, 
+                           centroX + areaEfectivaX/2 - margenSeguridad);
     }
     
-    if (posicion.y < margenSeguridad || posicion.y > height - margenSeguridad) {
+    if (posicion.y < centroY - areaEfectivaY/2 + margenSeguridad || 
+        posicion.y > centroY + areaEfectivaY/2 - margenSeguridad) {
       velocidad.y *= -1;
       // Corregir posición para que esté dentro de los límites
-      posicion.y = constrain(posicion.y, margenSeguridad, height - margenSeguridad);
+      posicion.y = constrain(posicion.y, 
+                           centroY - areaEfectivaY/2 + margenSeguridad, 
+                           centroY + areaEfectivaY/2 - margenSeguridad);
     }
     
-    if (posicion.z < -500 + margenSeguridad || posicion.z > 500 - margenSeguridad) {
+    // Limitar movimiento en Z para asegurar visibilidad
+    if (posicion.z < -limiteZ + margenSeguridad || posicion.z > limiteZ - margenSeguridad) {
       velocidad.z *= -1;
       // Corregir posición para que esté dentro de los límites
-      posicion.z = constrain(posicion.z, -500 + margenSeguridad, 500 - margenSeguridad);
+      posicion.z = constrain(posicion.z, 
+                           -limiteZ + margenSeguridad, 
+                           limiteZ - margenSeguridad);
     }
     
     // Reiniciar aceleración

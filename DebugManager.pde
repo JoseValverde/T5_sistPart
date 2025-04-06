@@ -45,9 +45,10 @@ class DebugManager {
     // Sección de controles de teclado
     text("CONTROLES:", 20, 320);
     text("D - Activar/desactivar panel debug", 20, 340);
-    text("R - Activar/desactivar rotación automática", 20, 360);
-    text("Flechas - Rotar cámara", 20, 380);
-    text("Click+Arrastrar - Rotar cámara", 20, 400);
+    text("R - " + (rotateCam ? "Desactivar" : "Activar") + " rotación automática", 20, 360);
+    text("Forma: " + shapeManager.numLados + " lados (Z/X para cambiar)", 20, 380); // ACTUALIZADO
+    text("Flechas - Rotar cámara", 20, 400);
+    text("Click+Arrastrar - Rotar cámara", 20, 420);
     
     popStyle();
   }
@@ -65,7 +66,7 @@ class DebugManager {
     noFill();
     rect(x + 100, y - 12, 150, 15);
     
-    fill(r, g, b);
+    fill(255);
     noStroke();
     rect(x + 100, y - 12, 150 * valor, 15);
   }

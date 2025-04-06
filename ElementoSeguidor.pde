@@ -2,52 +2,61 @@ class ElementoSeguidor extends ElementoBase {
   ElementoBase padre;
   float delay;
   PVector offset;
-  
-  // Factor para controlar la distancia entre elementos
   float factorDistancia;
   
   ElementoSeguidor(PVector posicion, color colorInicial, PShape forma, ElementoBase padre) {
     super(posicion, colorInicial, forma);
     this.padre = padre;
     
-    // Reducir significativamente el valor de delay para hacer el efecto más notable
-    // Con valores más bajos, el lerp hace transiciones más lentas
-    float delayBase = random(0.1, 0.03); // Valores anteriores: 0.2, 0.5
+    // Corregido: rango invertido (antes era random(0.1, 0.03))
+    float delayBase = random(0.03, 0.1);
     
-    // Acumulación de delay basado en el nivel jerárquico
+    // Acumulación de delay basado en el nivel jerárquico - corregido
     if (padre instanceof ElementoSeguidor) {
-      // Si el padre es un ElementoSeguidor, acumular su delay con un factor menor
-      // para que siga siendo apreciable pero no demasiado extremo
-      this.delay = delayBase ;
+      // Acumular el delay del padre + un pequeño delay propio
+      this.delay = ((ElementoSeguidor)padre).delay * 0.8 + delayBase * 0.2;
     } else {
-      // Si el padre es el elemento principal, solo usar el delay base
       this.delay = delayBase;
     }
     
-    // Factor de distancia aleatorio pero mayor
     this.factorDistancia = random(100, 200);
     
-    // Generar un vector de dirección aleatoria normalizado
-    PVector direccionAleatoria = new PVector(
-      random(-1, 1),
-      random(-1, 1),
-      random(-1, 1)
-    );
-    direccionAleatoria.normalize();
-    
-    // Aplicar el factor de distancia para crear más separación
+    // Optimizado: Vector dirección con valores más eficientes
+    PVector direccionAleatoria = PVector.random3D(); // Más eficiente que crear y normalizar
     this.offset = PVector.mult(direccionAleatoria, factorDistancia);
   }
   
   void actualizar() {
-    // Obtener la posición objetivo (padre + offset)
-    PVector objetivo = PVector.add(padre.posicion, offset);
+    // Obtener niveles de audio para modulación
+    float nivelAudio = 1.0;
     
-    // Seguir al padre con delay (ease)
-    // Con un delay más bajo, la interpolación es más lenta, creando más retraso visual
+    // Determinar qué nivel de audio usar según posición en la jerarquía
+    if (padre instanceof ElementoPrincipal) {
+      nivelAudio = 1.0 + audioManager.getNivelGraves() * 2.0;
+    } else {
+      // Determinar nivel en jerarquía de forma más eficiente
+      ElementoSeguidor padreSeguidor = (ElementoSeguidor)padre;
+      int nivel = padreSeguidor.getNivel() + 1;
+      
+      switch (nivel % 3) {
+        case 0: nivelAudio = 1.0 + audioManager.getNivelGraves() * 2.0; break;
+        case 1: nivelAudio = 1.0 + audioManager.getNivelMedios() * 2.0; break;
+        case 2: nivelAudio = 1.0 + audioManager.getNivelAgudos() * 2.0; break;
+      }
+    }
+    
+    // Aplicar modulación a la distancia
+    PVector offsetModulado = PVector.mult(offset.normalize(), factorDistancia * nivelAudio);
+    PVector objetivo = PVector.add(padre.posicion, offsetModulado);
+    
+    // Seguir al padre con delay
     posicion.lerp(objetivo, delay);
-    
-    // Actualización suave de color
     colorActual = lerpColor(colorActual, padre.colorActual, delay);
+  }
+  
+  // Método para calcular nivel jerárquico - más eficiente
+  int getNivel() {
+    if (padre instanceof ElementoPrincipal) return 0;
+    return ((ElementoSeguidor)padre).getNivel() + 1;
   }
 }

@@ -9,8 +9,8 @@ ShapeManager shapeManager;
 DebugManager debugManager;
 boolean debugMode = false;
 
-int numHijosDerivados = 3;
-int nivelMaximoProfundidad = 4; // Cuántas generaciones de hijos permitir
+int numHijosDerivados =2;
+int nivelMaximoProfundidad = 6; // Cuántas generaciones de hijos permitir
 
 // Variables para control de cámara
 float rotX = 0;
@@ -19,7 +19,7 @@ float camZ = 0;
 boolean rotateCam = false;
 
 void setup() {
-  size(700, 1200, P3D);
+  size(700, 1000, P3D);
   
   // Inicializar paleta de colores
   colorPalette = new ColorPalette();
@@ -49,6 +49,12 @@ void setup() {
   
   // Configurar iluminación
   lights();
+  
+  // Inicializar valores de cámara
+  rotX = 0;
+  rotY = 0;
+  camZ = 0;
+  rotateCam = true;  // Activar rotación automática por defecto
 }
 
 void draw() {
@@ -95,22 +101,41 @@ void draw() {
   hint(ENABLE_DEPTH_TEST);  // Restaurar comportamiento normal para el siguiente frame
 }
 
-// Configurar la cámara para mejor visualización 3D
+// Configurar la cámara para seguir y enfocar al elemento principal
 void setupCamera() {
-  // Centrar en la pantalla
-  translate(width/2, height/2, camZ);
+  // Variables para controlar órbita de cámara
+  float distanciaOrbital = 1500 - camZ;  // Distancia de la cámara al objetivo
+  float xCam, yCam, zCam;
   
-  // Rotación de la cámara
-  rotateX(rotX);
-  rotateY(rotY);
+  // Si la rotación automática está activada, incrementar el ángulo
+  if (rotateCam) {
+    rotY += 0.005;  // Velocidad de rotación automática
+  }
   
-  // Devolver al origen para que los objetos se dibujen correctamente
-  translate(-width/2, -height/2, -camZ);
+  // Calcular posición de la cámara en órbita
+  xCam = elementoPrincipal.posicion.x + sin(rotY) * cos(rotX) * distanciaOrbital;
+  yCam = elementoPrincipal.posicion.y + sin(rotX) * distanciaOrbital;
+  zCam = elementoPrincipal.posicion.z + cos(rotY) * cos(rotX) * distanciaOrbital;
+  
+  // Configurar la cámara para mirar hacia el elemento principal
+  camera(
+    xCam, yCam, zCam,                               // Posición de la cámara
+    elementoPrincipal.posicion.x,                   // Posición del objetivo (X)
+    elementoPrincipal.posicion.y,                   // Posición del objetivo (Y)
+    elementoPrincipal.posicion.z,                   // Posición del objetivo (Z)
+    0, 1, 0                                         // Vector "arriba"
+  );
   
   // Añadir luces
   ambientLight(60, 60, 60);
-  directionalLight(255, 255, 255, 1, 1, -1);
-  pointLight(100, 100, 100, width/2, height/2, 200);
+  directionalLight(100, 100, 100, 1, 1, -1);
+  
+  // Luz que sigue al elemento principal
+  pointLight(80, 80, 80, 
+    elementoPrincipal.posicion.x,
+    elementoPrincipal.posicion.y, 
+    elementoPrincipal.posicion.z
+  );
 }
 
 void keyPressed() {
@@ -118,33 +143,24 @@ void keyPressed() {
     debugMode = !debugMode;
   } 
   else if (key == 'r' || key == 'R') {
-    // Activar/desactivar rotación automática
     rotateCam = !rotateCam;
   }
-  // Controles de sensibilidad por bandas de frecuencia
-  else if (key == '1') {
-    // Disminuir sensibilidad de graves
-    audioManager.disminuirSensibilidadGraves();
+  // Simplificación de control de sensibilidad
+  else if (key >= '1' && key <= '6') {
+    int tipo = (key - '1') / 2;  // 0=graves, 1=medios, 2=agudos
+    boolean aumentar = (key - '1') % 2 == 1; // Impar=aumentar
+    audioManager.ajustarSensibilidad(tipo, aumentar);
   }
-  else if (key == '2') {
-    // Aumentar sensibilidad de graves
-    audioManager.aumentarSensibilidadGraves();
+  // Control de formas - unificado
+  else if (key == 'z' || key == 'Z' || key == '[') {
+    int nuevoLados = max(3, shapeManager.numLados - 1);
+    shapeManager.setNumLados(nuevoLados);
+    actualizarTodasLasFormas();
   }
-  else if (key == '3') {
-    // Disminuir sensibilidad de medios
-    audioManager.disminuirSensibilidadMedios();
-  }
-  else if (key == '4') {
-    // Aumentar sensibilidad de medios
-    audioManager.aumentarSensibilidadMedios();
-  }
-  else if (key == '5') {
-    // Disminuir sensibilidad de agudos
-    audioManager.disminuirSensibilidadAgudos();
-  }
-  else if (key == '6') {
-    // Aumentar sensibilidad de agudos
-    audioManager.aumentarSensibilidadAgudos();
+  else if (key == 'x' || key == 'X' || key == ']') {
+    int nuevoLados = min(20, shapeManager.numLados + 1);
+    shapeManager.setNumLados(nuevoLados);
+    actualizarTodasLasFormas();
   }
   // Controles generales (mantener compatibilidad)
   else if (key == '+' || key == '=') {
@@ -180,30 +196,33 @@ void mouseWheel(MouseEvent event) {
   camZ += event.getCount() * 30;
 }
 
-// Crear estructura de hijos recursivamente
+// Crear estructura de hijos recursivamente - optimizado
 void crearHijos(ElementoBase padre, int nivelProfundidad) {
   // Detener recursión si alcanza la profundidad máxima
   if (nivelProfundidad >= nivelMaximoProfundidad) return;
   
-  // Calcular dirección base para distribuir hijos uniformemente en el espacio
-  float anguloBase = TWO_PI / numHijosDerivados;
+  // Obtener forma actual una sola vez
+  PShape formaActual = shapeManager.getCurrentShape();
   
   for (int i = 0; i < numHijosDerivados; i++) {
-    // Calcular ángulo para este hijo específico
-    float angulo = anguloBase * i;
-    
     // Crear hijo con posición inicial del padre
     ElementoSeguidor hijo = new ElementoSeguidor(
       padre.posicion.copy(),
       padre.colorActual,
-      shapeManager.getCurrentShape(),
+      formaActual, // Reutilizar la misma forma
       padre
     );
     
-    // Añadir a la lista
     todosElementos.add(hijo);
-    
-    // Recursivamente crear hijos para este nuevo elemento
     crearHijos(hijo, nivelProfundidad + 1);
+  }
+}
+
+// Método para actualizar la forma de todos los elementos
+void actualizarTodasLasFormas() {
+  PShape nuevaForma = shapeManager.getCurrentShape();
+  
+  for (ElementoBase elemento : todosElementos) {
+    elemento.forma = nuevaForma;
   }
 }
