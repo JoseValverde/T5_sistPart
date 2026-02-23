@@ -19,7 +19,7 @@ float camZ = 0;
 boolean rotateCam = false;
 
 void setup() {
-  size(700, 1000, P3D);
+  size(700, 1200, P3D);
   
   // Inicializar paleta de colores
   colorPalette = new ColorPalette();

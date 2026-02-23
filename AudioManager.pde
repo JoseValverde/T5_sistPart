@@ -3,7 +3,7 @@ class AudioManager {
   FFT fft;
   AudioIn input;
   
-  int bandas = 512;
+  int bandas = 256;
   float[] spectrum;
   
   float nivelGraves;

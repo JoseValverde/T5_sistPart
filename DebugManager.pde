@@ -66,7 +66,7 @@ class DebugManager {
     noFill();
     rect(x + 100, y - 12, 150, 15);
     
-    fill(255);
+    fill(r, g, b);
     noStroke();
     rect(x + 100, y - 12, 150 * valor, 15);
   }

@@ -1,7 +1,7 @@
 class ShapeManager {
   PShape currentShape;
   int shapeType = 0; // 0: polígono, 1: obj, 2: primitiva
-  int numLados = 20;  // Cambiado de 6 a 20 para usar icosaedro como predeterminado
+  int numLados = 4;  // Cubo como forma predeterminada
   private PShape[] shapeCache;
   
   ShapeManager() {
@@ -14,7 +14,7 @@ class ShapeManager {
     // Usar el número de lados configurado
     switch(numLados) {
       case 4:
-        currentShape = createTetrahedron(20);
+        currentShape = createShape(BOX, 30, 30, 30);
         break;
       case 8:
         currentShape = createOctahedron(20);
@@ -52,6 +52,11 @@ class ShapeManager {
   }
   
   PShape getCurrentShape() {
+    // Si hay forma externa cargada (OBJ o primitiva), respetarla
+    if (shapeType == 1 || shapeType == 2) {
+      return currentShape;
+    }
+    
     // Usar cache si ya existe
     int cacheIndex = (numLados >= 3 && numLados <= 20) ? numLados : 0;
     
@@ -59,7 +64,7 @@ class ShapeManager {
       PShape newShape;
       
       switch(numLados) {
-        case 4: newShape = createTetrahedron(20); break;
+        case 4: newShape = createShape(BOX, 30, 30, 30); break;
         case 8: newShape = createOctahedron(20); break;
         case 20: newShape = createIcosahedron(20); break;
         default: newShape = createPrisma(20, numLados); break;
