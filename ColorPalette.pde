@@ -52,7 +52,7 @@ class ColorPalette {
   }
   
   color getBgColor() {
-    return text100 ; // Corregido: antes devolvía text100
+    return text100;
   }
   
   color getTextColor() {

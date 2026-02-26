@@ -25,6 +25,13 @@ int cooldownGraveMs = 90;
 int cooldownAgudoMs = 140;
 float velocidadZoomCiclico = 0.02;
 
+// Fondo parallax 2D (ligero)
+PVector[][] parallaxPuntos;
+int[] parallaxCantidadPorCapa = {48, 28, 16};
+float[] parallaxVelocidadPorCapa = {0.25, 0.55, 0.95};
+float[] parallaxAlphaPorCapa = {12, 24, 42};
+float[] parallaxPesoPorCapa = {1.0, 1.4, 1.8};
+
 void setup() {
   size(1080/2, 1920/2, P3D);
   
@@ -57,6 +64,9 @@ void setup() {
   // Configurar iluminación
   lights();
   
+  // Inicializar fondo parallax 2D
+  inicializarParallax();
+  
   // Inicializar valores de cámara
   rotX = 0;
   rotY = 0;
@@ -65,6 +75,7 @@ void setup() {
 
 void draw() {
   background(colorPalette.getBgColor());
+  dibujarParallax2D();
   
   // INICIO DEL ENTORNO 3D
   pushMatrix();
@@ -276,4 +287,45 @@ void actualizarTodasLasFormas() {
   for (ElementoBase elemento : todosElementos) {
     elemento.forma = nuevaForma;
   }
+}
+
+void inicializarParallax() {
+  parallaxPuntos = new PVector[parallaxCantidadPorCapa.length][];
+  
+  for (int capa = 0; capa < parallaxCantidadPorCapa.length; capa++) {
+    int cantidad = parallaxCantidadPorCapa[capa];
+    parallaxPuntos[capa] = new PVector[cantidad];
+    
+    for (int i = 0; i < cantidad; i++) {
+      parallaxPuntos[capa][i] = new PVector(random(width), random(height));
+    }
+  }
+}
+
+void dibujarParallax2D() {
+  if (parallaxPuntos == null) return;
+  
+  pushStyle();
+  strokeCap(ROUND);
+  
+  // Muy bajo costo: pocos puntos con diferentes velocidades por capa
+  for (int capa = 0; capa < parallaxPuntos.length; capa++) {
+    float velocidad = parallaxVelocidadPorCapa[capa] * (1.0 + audioDriveFrame * 0.15);
+    stroke(255, parallaxAlphaPorCapa[capa]);
+    strokeWeight(parallaxPesoPorCapa[capa]);
+    
+    for (int i = 0; i < parallaxPuntos[capa].length; i++) {
+      PVector p = parallaxPuntos[capa][i];
+      p.x += velocidad;
+      
+      if (p.x > width + 2) {
+        p.x = -2;
+        p.y = random(height);
+      }
+      
+      point(p.x, p.y);
+    }
+  }
+  
+  popStyle();
 }
