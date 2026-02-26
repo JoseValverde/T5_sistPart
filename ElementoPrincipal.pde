@@ -47,13 +47,21 @@ class ElementoPrincipal extends ElementoBase {
   
   // Método para propagar el cambio a los hijos directos
   void propagarCambioDireccion() {
-    for (ElementoBase elemento : todosElementos) {
-      if (elemento instanceof ElementoSeguidor) {
-        ElementoSeguidor hijo = (ElementoSeguidor)elemento;
-        if (hijo.padre == this) {
-          hijo.señalizarCambioDireccion();
-        }
-      }
+    for (ElementoBase hijo : hijos) {
+      hijo.señalizarCambioDireccion();
+    }
+  }
+  
+  @Override
+  void cambiarColor(color nuevoColor) {
+    super.cambiarColor(nuevoColor);
+    propagarCambioColor();
+  }
+  
+  // Método para propagar el cambio de color a hijos directos
+  void propagarCambioColor() {
+    for (ElementoBase hijo : hijos) {
+      hijo.señalizarCambioColor(colorActual);
     }
   }
   

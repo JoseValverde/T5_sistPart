@@ -16,6 +16,12 @@ int nivelMaximoProfundidad = 6; // Cuántas generaciones de hijos permitir
 float rotX = 0;
 float rotY = 0;
 float camZ = 0;
+float audioDriveFrame = 0;
+int ultimoTriggerGrave = 0;
+int ultimoTriggerAgudo = 0;
+int cooldownGraveMs = 90;
+int cooldownAgudoMs = 140;
+float velocidadZoomCiclico = 0.02;
 
 void setup() {
   size(1080/2, 1920/2, P3D);
@@ -66,15 +72,19 @@ void draw() {
   
   // Actualizar análisis de audio
   audioManager.update();
+  audioDriveFrame = audioManager.getAudioDrive();
   
   // Verificar y reaccionar a cambios en audio
-  if (audioManager.hayGrave()) {
+  int ahora = millis();
+  if (audioManager.hayGrave() && ahora - ultimoTriggerGrave >= cooldownGraveMs) {
     // Iniciar el cambio de dirección en cascada
     elementoPrincipal.señalizarCambioDireccion();
+    ultimoTriggerGrave = ahora;
   }
   
-  if (audioManager.hayAgudo()) {
+  if (audioManager.hayGrave() && ahora - ultimoTriggerAgudo >= cooldownAgudoMs) {
     elementoPrincipal.cambiarColor(colorPalette.getRandomColor());
+    ultimoTriggerAgudo = ahora;
   }
   
   // Actualizar y mostrar todos los elementos
@@ -102,11 +112,14 @@ void draw() {
 // Configurar la cámara para seguir y enfocar al elemento principal
 void setupCamera() {
   // Variables para controlar órbita de cámara
-  float distanciaOrbital = 1500 - camZ;  // Distancia de la cámara al objetivo
+  float distanciaBase = (1500 - camZ) * 0.85;  // Cámara 15% más cerca del objetivo
+  float faseZoom = (sin(frameCount * velocidadZoomCiclico) + 1.0) * 0.5; // 0..1
+  float distanciaMinima = max(140, distanciaBase * 0.18); // Muy cerca en el punto mínimo
+  float distanciaOrbital = lerp(distanciaBase, distanciaMinima, faseZoom);
   float xCam, yCam, zCam;
   
   // Órbita continua para que la cámara no se detenga
-  rotY += 0.005;
+  rotY += 0.015;
   
   // Calcular posición de la cámara en órbita
   xCam = elementoPrincipal.posicion.x + sin(rotY) * cos(rotX) * distanciaOrbital;
@@ -125,13 +138,6 @@ void setupCamera() {
   // Añadir luces
   ambientLight(60, 60, 60);
   directionalLight(100, 100, 100, 1, 1, -1);
-  
-  // Luz que sigue al elemento principal
-  pointLight(80, 80, 80, 
-    elementoPrincipal.posicion.x,
-    elementoPrincipal.posicion.y, 
-    elementoPrincipal.posicion.z
-  );
 }
 
 void keyPressed() {
@@ -207,6 +213,7 @@ void crearHijos(ElementoBase padre, int nivelProfundidad) {
     );
     
     todosElementos.add(hijo);
+    padre.hijos.add(hijo);
     crearHijos(hijo, nivelProfundidad + 1);
   }
 }
@@ -214,6 +221,7 @@ void crearHijos(ElementoBase padre, int nivelProfundidad) {
 // Método para actualizar la forma de todos los elementos
 void actualizarTodasLasFormas() {
   PShape nuevaForma = shapeManager.getCurrentShape();
+  nuevaForma.disableStyle();
   
   for (ElementoBase elemento : todosElementos) {
     elemento.forma = nuevaForma;

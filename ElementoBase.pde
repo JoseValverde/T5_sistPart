@@ -4,6 +4,7 @@ abstract class ElementoBase {
   PVector aceleracion;
   color colorActual;
   PShape forma;
+  ArrayList<ElementoBase> hijos;
   
   // Limitadores de movimiento
   float maxVelocidad = 20.0;
@@ -16,6 +17,10 @@ abstract class ElementoBase {
   boolean cambiarDireccionPendiente = false;
   int tiempoUltimoCambio = 0;
   
+  // Variables para control de cambios de color en cascada
+  boolean cambiarColorPendiente = false;
+  color colorPendiente;
+  
   // Variables para rotación estable
   float rotationSpeed;
   float rotationOffset;
@@ -23,7 +28,12 @@ abstract class ElementoBase {
   ElementoBase(PVector posicion, color colorInicial, PShape forma) {
     this.posicion = posicion;
     this.colorActual = colorInicial;
+    this.colorPendiente = colorInicial;
     this.forma = forma;
+    if (this.forma != null) {
+      this.forma.disableStyle();
+    }
+    this.hijos = new ArrayList<ElementoBase>();
     this.velocidad = new PVector(random(-1, 1), random(-1, 1), random(-1, 1));
     this.aceleracion = new PVector(0, 0, 0);
     
@@ -39,6 +49,12 @@ abstract class ElementoBase {
   
   void cambiarColor(color nuevoColor) {
     colorActual = nuevoColor;
+  }
+  
+  // Método para señalizar un cambio de color pendiente
+  void señalizarCambioColor(color nuevoColor) {
+    colorPendiente = nuevoColor;
+    cambiarColorPendiente = true;
   }
   
   // Método para señalizar un cambio de dirección pendiente
@@ -58,13 +74,14 @@ abstract class ElementoBase {
     rotateY(rotY);
     rotateX(rotX);
     
+    float escalaAudio = lerp(0.12, 1.5, audioDriveFrame);
+    scale(escalaAudio);
+    
     // Material más eficiente
     shininess(5.0);
     
-    // Aplicar color - sin stroke para mejor rendimiento
-    forma.setFill(colorActual);
-    forma.setStroke(false);
-    
+    noStroke();
+    fill(colorActual);
     shape(forma);
     popMatrix();
   }

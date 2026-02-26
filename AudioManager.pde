@@ -3,20 +3,22 @@ class AudioManager {
   FFT fft;
   AudioIn input;
   
-  int bandas = 256;
+  int bandas = 128;
   float[] spectrum;
   
   float nivelGraves;
   float nivelMedios;
   float nivelAgudos;
+  float nivelDrive = 0;
+  float nivelDriveSuavizado = 0;
   
-  float umbralGraves = 0.003;
+  float umbralGraves = 0.4;
   float umbralAgudos = 0.2;
   
   // Factores de sensibilidad independientes
-  float factorSensibilidadGraves = 15.0;
-  float factorSensibilidadMedios = 100.0;
-  float factorSensibilidadAgudos = 300.0;
+  float factorSensibilidadGraves = 4.5;
+  float factorSensibilidadMedios = 100;
+  float factorSensibilidadAgudos = 200.0;
   
   boolean modoArchivoAudio = true;
   
@@ -61,6 +63,10 @@ class AudioManager {
     nivelGraves = calcularNivelEnRango(0, bandas/6) * factorSensibilidadGraves;
     nivelMedios = calcularNivelEnRango(bandas/6, bandas/2) * factorSensibilidadMedios;
     nivelAgudos = calcularNivelEnRango(bandas/2, bandas-1) * factorSensibilidadAgudos;
+    
+    // Valor único de drive: solo graves para una visual más contundente
+    nivelDrive = nivelGraves;
+    nivelDriveSuavizado = nivelDrive;
   }
   
   float calcularNivelEnRango(int inicio, int fin) {
@@ -92,6 +98,11 @@ class AudioManager {
   float getNivelAgudos() {
     actualizarCacheSiNecesario();
     return nivelCache[2];
+  }
+  
+  float getAudioDrive() {
+    // Ganancia fuerte para que el movimiento sea claramente visible
+    return constrain(nivelDriveSuavizado * 4.0, 0, 1);
   }
   
   // Método para actualizar el cache solo cuando es necesario

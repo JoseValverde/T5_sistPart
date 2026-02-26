@@ -1,9 +1,9 @@
 class ColorPalette {
-  color primary100 = #FF7F50;
-  color primary200 = #dd6236;
-  color primary300 = #8f1e00;
-  color accent100 = #8B4513;
-  color accent200 = #ffd299;
+  color primary100 = #50B2C0;
+  color primary200 = #FEEFDD;
+  color primary300 = #FAAA8D;
+  color accent100 = #FF4000;
+  color accent200 = #50B2C0;
   color text100 = #000000;
   color text200 = #2c2c2c;
   color bg100 = #F7EEDD;
@@ -23,6 +23,27 @@ class ColorPalette {
   color getRandomColor() {
     int index = floor(random(colorArray.length));
     return colorArray[index];
+  }
+  
+  color getColorPosterior(color colorBase, int pasos) {
+    int idxBase = 0;
+    boolean encontrado = false;
+    
+    for (int i = 0; i < colorArray.length; i++) {
+      if (colorArray[i] == colorBase) {
+        idxBase = i;
+        encontrado = true;
+        break;
+      }
+    }
+    
+    if (!encontrado) {
+      idxBase = 0;
+    }
+    
+    int offset = max(1, pasos);
+    int idxNuevo = (idxBase + offset) % colorArray.length;
+    return colorArray[idxNuevo];
   }
   
   // Método específico para obtener el color accent200 para el elemento principal

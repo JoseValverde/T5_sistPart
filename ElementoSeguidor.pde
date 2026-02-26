@@ -5,6 +5,7 @@ class ElementoSeguidor extends ElementoBase {
   PVector direccionOffset;
   float factorDistancia;
   int nivelJerarquico;
+  int desplazamientoColor;
   
   ElementoSeguidor(PVector posicion, color colorInicial, PShape forma, ElementoBase padre) {
     super(posicion, colorInicial, forma);
@@ -24,25 +25,25 @@ class ElementoSeguidor extends ElementoBase {
     }
     
     this.factorDistancia = random(100, 200);
+    this.desplazamientoColor = 1 + (padre.hijos.size() % max(1, colorPalette.colorArray.length - 1));
     
     // Guardar una dirección unitaria reutilizable
     this.direccionOffset = PVector.random3D();
   }
   
   void actualizar() {
-    // Obtener niveles de audio para modulación
-    float nivelAudio = 1.0;
+    int stride = 1;
     
-    // Determinar qué nivel de audio usar según posición en la jerarquía
-    if (padre instanceof ElementoPrincipal) {
-      nivelAudio = 1.0 + audioManager.getNivelGraves() * 2.0;
-    } else {
-      switch (nivelJerarquico % 3) {
-        case 0: nivelAudio = 1.0 + audioManager.getNivelGraves() * 2.0; break;
-        case 1: nivelAudio = 1.0 + audioManager.getNivelMedios() * 2.0; break;
-        case 2: nivelAudio = 1.0 + audioManager.getNivelAgudos() * 2.0; break;
-      }
+    if (((frameCount + nivelJerarquico) % stride) != 0) {
+      colorActual = colorPalette.getColorPosterior(padre.colorActual, desplazamientoColor);
+      return;
     }
+    
+    // Mantiene: audio maximo -> distancia maxima.
+    // Pero permite acercarse sin necesitar audio minimo absoluto.
+    float driveDistancia = constrain((audioDriveFrame - 0.35) / 0.65, 0, 1);
+    driveDistancia = pow(driveDistancia, 1.4);
+    float nivelAudio = lerp(0.18, 4.8, driveDistancia);
     
     // Evitar alocaciones temporales por frame
     float distanciaModulada = factorDistancia * nivelAudio;
@@ -53,11 +54,39 @@ class ElementoSeguidor extends ElementoBase {
     posicion.x = lerp(posicion.x, objetivoX, delay);
     posicion.y = lerp(posicion.y, objetivoY, delay);
     posicion.z = lerp(posicion.z, objetivoZ, delay);
-    colorActual = lerpColor(colorActual, padre.colorActual, delay);
+    colorActual = colorPalette.getColorPosterior(padre.colorActual, desplazamientoColor);
   }
   
   // Método para calcular nivel jerárquico - más eficiente
   int getNivel() {
     return nivelJerarquico;
+  }
+  
+  @Override
+  void mostrar() {
+    int drawStride = 1;
+    
+    if (((frameCount + nivelJerarquico) % drawStride) != 0) {
+      return;
+    }
+    
+    pushMatrix();
+    translate(posicion.x, posicion.y, posicion.z);
+    
+    // En niveles altos evitamos trigonometría por elemento
+    if (nivelJerarquico < 4) {
+      float rotY = sin(frameCount * rotationSpeed + rotationOffset);
+      float rotX = cos(frameCount * rotationSpeed * 0.7);
+      rotateY(rotY);
+      rotateX(rotX);
+    }
+    
+    float escalaAudio = lerp(0.12, 1.5, audioDriveFrame);
+    scale(escalaAudio);
+
+    noStroke();
+    fill(colorActual);
+    shape(forma);
+    popMatrix();
   }
 }
