@@ -198,4 +198,31 @@ class AudioManager {
         break;
     }
   }
+  
+  void pauseAudio() {
+    if (soundFile != null) {
+      soundFile.pause();
+    }
+    if (input != null) {
+      input.stop();
+    }
+  }
+  
+  void resumeAudio() {
+    if (soundFile != null && !soundFile.isPlaying()) {
+      soundFile.loop();
+    }
+    if (input != null) {
+      input.start();
+    }
+  }
+  
+  void stopAudio() {
+    if (soundFile != null) {
+      soundFile.stop();
+    }
+    if (input != null) {
+      input.stop();
+    }
+  }
 }

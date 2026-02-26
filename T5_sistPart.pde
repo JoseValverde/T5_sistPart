@@ -8,6 +8,8 @@ ColorPalette colorPalette;
 ShapeManager shapeManager;
 DebugManager debugManager;
 boolean debugMode = false;
+boolean isPaused = false;
+String audioFilePath = "musica/nombre.mp3";
 
 int numHijosDerivados =2;
 int nivelMaximoProfundidad = 6; // Cuántas generaciones de hijos permitir
@@ -33,7 +35,7 @@ void setup() {
   shapeManager = new ShapeManager();
   
   // Inicializar audio manager
-  audioManager = new AudioManager(this, "musica/nombre.mp3");
+  audioManager = new AudioManager(this, audioFilePath);
   
   // Crear elemento principal
   elementoPrincipal = new ElementoPrincipal(
@@ -143,7 +145,13 @@ void setupCamera() {
 void keyPressed() {
   if (key == 'd' || key == 'D') {
     debugMode = !debugMode;
-  } 
+  }
+  else if (key == 'r' || key == 'R') {
+    resetSketch();
+  }
+  else if (key == 's' || key == 'S') {
+    togglePause();
+  }
   // Simplificación de control de sensibilidad
   else if (key >= '1' && key <= '6') {
     int tipo = (key - '1') / 2;  // 0=graves, 1=medios, 2=agudos
@@ -181,6 +189,48 @@ void keyPressed() {
   }
   else if (keyCode == RIGHT) {
     rotY += 0.1;
+  }
+}
+
+void togglePause() {
+  if (isPaused) {
+    loop();
+    audioManager.resumeAudio();
+    isPaused = false;
+  } else {
+    noLoop();
+    audioManager.pauseAudio();
+    isPaused = true;
+  }
+}
+
+void resetSketch() {
+  if (audioManager != null) {
+    audioManager.stopAudio();
+  }
+  
+  audioManager = new AudioManager(this, audioFilePath);
+  
+  elementoPrincipal = new ElementoPrincipal(
+    new PVector(width/2, height/2, 0),
+    colorPalette.getElementoPrincipalColor(),
+    shapeManager.getCurrentShape()
+  );
+  
+  todosElementos = new ArrayList<ElementoBase>();
+  todosElementos.add(elementoPrincipal);
+  crearHijos(elementoPrincipal, 0);
+  
+  rotX = 0;
+  rotY = 0;
+  camZ = 0;
+  audioDriveFrame = 0;
+  ultimoTriggerGrave = 0;
+  ultimoTriggerAgudo = 0;
+  
+  if (isPaused) {
+    isPaused = false;
+    loop();
   }
 }
 
