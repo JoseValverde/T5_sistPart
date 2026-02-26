@@ -16,10 +16,9 @@ int nivelMaximoProfundidad = 6; // Cuántas generaciones de hijos permitir
 float rotX = 0;
 float rotY = 0;
 float camZ = 0;
-boolean rotateCam = false;
 
 void setup() {
-  size(700, 1200, P3D);
+  size(1080/2, 1920/2, P3D);
   
   // Inicializar paleta de colores
   colorPalette = new ColorPalette();
@@ -54,7 +53,6 @@ void setup() {
   rotX = 0;
   rotY = 0;
   camZ = 0;
-  rotateCam = true;  // Activar rotación automática por defecto
 }
 
 void draw() {
@@ -107,10 +105,8 @@ void setupCamera() {
   float distanciaOrbital = 1500 - camZ;  // Distancia de la cámara al objetivo
   float xCam, yCam, zCam;
   
-  // Si la rotación automática está activada, incrementar el ángulo
-  if (rotateCam) {
-    rotY += 0.005;  // Velocidad de rotación automática
-  }
+  // Órbita continua para que la cámara no se detenga
+  rotY += 0.005;
   
   // Calcular posición de la cámara en órbita
   xCam = elementoPrincipal.posicion.x + sin(rotY) * cos(rotX) * distanciaOrbital;
@@ -142,9 +138,6 @@ void keyPressed() {
   if (key == 'd' || key == 'D') {
     debugMode = !debugMode;
   } 
-  else if (key == 'r' || key == 'R') {
-    rotateCam = !rotateCam;
-  }
   // Simplificación de control de sensibilidad
   else if (key >= '1' && key <= '6') {
     int tipo = (key - '1') / 2;  // 0=graves, 1=medios, 2=agudos
