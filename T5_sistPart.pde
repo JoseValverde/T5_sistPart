@@ -32,6 +32,10 @@ float[] parallaxVelocidadPorCapa = {0.25, 0.55, 0.95};
 float[] parallaxAlphaPorCapa = {12, 24, 42};
 float[] parallaxPesoPorCapa = {1.0, 1.4, 1.8};
 
+// Líneas de conexión temporales (padre-hijo)
+int tiempoUltimaConexion = 1000;
+int duracionConexionMs = 20;
+
 void setup() {
   size(1080/2, 1920/2, P3D);
   
@@ -94,6 +98,9 @@ void draw() {
     elementoPrincipal.señalizarCambioDireccion();
     ultimoTriggerGrave = ahora;
   }
+  if (audioManager.hayGrave()) {
+    tiempoUltimaConexion = ahora;
+  }
   
   if (audioManager.hayGrave() && ahora - ultimoTriggerAgudo >= cooldownAgudoMs) {
     elementoPrincipal.cambiarColor(colorPalette.getRandomColor());
@@ -104,6 +111,10 @@ void draw() {
   for (ElementoBase elemento : todosElementos) {
     elemento.actualizar();
     elemento.mostrar();
+  }
+  
+  if (ahora - tiempoUltimaConexion <= duracionConexionMs) {
+    dibujarLineasConexion();
   }
   
   // FIN DEL ENTORNO 3D
@@ -149,8 +160,8 @@ void setupCamera() {
   );
   
   // Añadir luces
-  ambientLight(60, 60, 60);
-  directionalLight(100, 100, 100, 1, 1, -1);
+  ambientLight(120, 120, 120);
+directionalLight(180, 180, 180, 1, 1, -1);
 }
 
 void keyPressed() {
@@ -324,6 +335,26 @@ void dibujarParallax2D() {
       }
       
       point(p.x, p.y);
+    }
+  }
+  
+  popStyle();
+}
+
+void dibujarLineasConexion() {
+  pushStyle();
+  float alphaLinea = 60 + audioDriveFrame * 8;
+  stroke(elementoPrincipal.colorActual, alphaLinea);
+  strokeWeight(2.0 + audioDriveFrame * 0.7);
+  noFill();
+  
+  for (ElementoBase elemento : todosElementos) {
+    if (elemento instanceof ElementoSeguidor) {
+      ElementoSeguidor seg = (ElementoSeguidor) elemento;
+      line(
+        seg.posicion.x, seg.posicion.y, seg.posicion.z,
+        seg.padre.posicion.x, seg.padre.posicion.y, seg.padre.posicion.z
+      );
     }
   }
   

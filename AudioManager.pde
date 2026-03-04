@@ -17,8 +17,8 @@ class AudioManager {
   
   // Factores de sensibilidad independientes
   float factorSensibilidadGraves = 4.5;
-  float factorSensibilidadMedios = 100;
-  float factorSensibilidadAgudos = 200.0;
+  float factorSensibilidadMedios = 20;
+  float factorSensibilidadAgudos = 100.0;
   
   boolean modoArchivoAudio = true;
   
